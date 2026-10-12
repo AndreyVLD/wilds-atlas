@@ -3,6 +3,7 @@
 
   python tools/atlas.py build [world ...] [--full]   render into web/public/maps (cached, incremental)
   python tools/atlas.py publish [--full]             build, then push the data and redeploy the site
+  schedule.bat                                       run publish every night (Windows)
 """
 import argparse
 import json
@@ -130,7 +131,7 @@ def build_world(w, server, cfg, jobs, full):
     iidx = {b: i for i, b in enumerate(st['biomes'])}
 
     with ProcessPoolExecutor(jobs) as ex:
-        futs = {ex.submit(scan.scan_region, files[k], w['min_y'], w['height']): k for k in todo}
+        futs = {ex.submit(scan.scan_region, files[k], w['min_y']): k for k in todo}
         for n, fut in enumerate(as_completed(futs), 1):
             k = futs[fut]
             a, blocks, biomes, starts, chunks = fut.result()
@@ -221,7 +222,7 @@ def build_world(w, server, cfg, jobs, full):
     (out / 'world.json').write_text(json.dumps(meta, separators=(',', ':')), 'utf-8')
     log(f"  {w['id']}: {meta['chunks']:,} chunks, {len(tiles)} tiles, {len(marks)} structures, "
         f"{len(labels)} labels ({time.time() - t0:.0f}s)")
-    return {'id': w['id'], 'name': w['name'], 'v': st['v']}
+    return {'id': w['id'], 'name': w['name'], 'v': st['v'], 'chunks': meta['chunks']}
 
 
 def build(cfg, server, worlds, only, jobs, full):
@@ -247,7 +248,9 @@ def build(cfg, server, worlds, only, jobs, full):
 # ---------- publish ----------
 
 def git(*args, env=None, cwd=ROOT, check=True, quiet=True):
-    r = subprocess.run(['git', *args], cwd=cwd, env=env, text=True, capture_output=quiet)
+    io = {'capture_output': True} if quiet else {'stdout': sys.stdout, 'stderr': sys.stderr}
+    no_window = getattr(subprocess, 'CREATE_NO_WINDOW', 0)  # the nightly task runs without a console
+    r = subprocess.run(['git', *args], cwd=cwd, env=env, text=True, creationflags=no_window, **io)
     if check and r.returncode:
         sys.exit(f"git {' '.join(args)} failed:\n{(r.stderr or '').strip()}")
     return (r.stdout or '').strip()
@@ -290,7 +293,10 @@ def main():
     ap.add_argument('-c', '--config', default=ROOT / 'config.toml')
     ap.add_argument('-j', '--jobs', type=int, default=max(1, (os.cpu_count() or 2) // 2), help='worker processes')
     ap.add_argument('--full', action='store_true', help='ignore the cache and redo everything')
+    ap.add_argument('--log', help='write progress and errors to this file (for the nightly task)')
     args = ap.parse_args()
+    if args.log:
+        sys.stdout = sys.stderr = open(args.log, 'w', encoding='utf-8')
     cfg, server, worlds = load_config(args.config)
     index = build(cfg, server, worlds, set(args.worlds) if args.command == 'build' else set(), args.jobs, args.full)
     if args.command == 'publish':

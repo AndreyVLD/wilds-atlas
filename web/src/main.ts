@@ -13,7 +13,6 @@ try {
   const index = await getJSON<Index>('maps/index.json')
   if (!index.worlds.length) throw new Error('404')
   document.title = $('title').textContent = index.title
-  $('realm').textContent = index.subtitle
   const atlas = new Atlas($('map'), index, $('readout'))
   ui(atlas)
   const view = atlas.parse(location.hash)

@@ -123,9 +123,23 @@ body::after {
 .cartouche p { margin: 6px 0 0; font-style: italic; color: var(--ink-soft); text-wrap: balance; }
 .blank .cartouche { top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: min(440px, calc(100vw - 32px)); }
 .blank .dock, .blank .foot { display: none; }
-#worlds { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 12px; margin-top: 8px; }
-#worlds button { padding: 2px 4px; border: 0; background: none; color: var(--ink-soft); font: 16px var(--caps); }
-#worlds button[aria-current='true'] { color: var(--rubric); text-decoration: underline 1px; text-underline-offset: 4px; }
+
+/* the world list, unrolled from the subtitle */
+.stack { display: inline-grid; }
+.stack > span { grid-area: 1 / 1; visibility: hidden; }
+.stack > .on { visibility: visible; }
+#realm button { margin: -2px -6px; padding: 2px 6px; border: 0; border-radius: 2px; background: none; }
+#realm button:hover, #realm [aria-expanded='true'] { color: var(--ink); }
+#realm svg { width: 17px; height: 17px; margin-left: 3px; vertical-align: -3px; color: var(--rubric); transition: transform 0.2s; }
+#realm [aria-expanded='true'] svg { transform: rotate(180deg); }
+#worlds { position: absolute; top: calc(100% + 6px); left: 0; min-width: 100%; margin: 0; padding: 7px; list-style: none; text-align: left; animation: unroll 0.16s ease-out; }
+#worlds button { display: grid; grid-template-columns: 10px 1fr; align-items: center; gap: 0 11px; width: 100%; padding: 6px 14px 7px 9px; border: 0; border-radius: 2px; background: none; font-size: 18px; text-align: left; white-space: nowrap; }
+#worlds button::before { content: ''; grid-row: span 2; justify-self: center; width: 7px; height: 7px; border: 1.4px solid var(--ink-soft); transform: rotate(45deg); }
+#worlds small { grid-column: 2; color: var(--ink-soft); font-size: 14px; font-style: italic; }
+#worlds button:hover, #worlds button:focus-visible { background: rgb(168 50 30 / 0.09); }
+#worlds [aria-current='true'] { color: var(--rubric); }
+#worlds [aria-current='true']::before { border-color: var(--rubric); background: var(--rubric); }
+@keyframes unroll { from { opacity: 0; transform: translateY(-5px); } }
 
 /* tools and panels, top right */
 .dock {

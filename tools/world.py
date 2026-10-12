@@ -23,7 +23,8 @@ CATS = (('ruin', ('ruin', 'rubble', 'remnant')),
                      'sculk', 'mineshaft', 'mining', 'refinery', 'chamber', 'deposit')))
 QUALIFIERS = ('dark_oak', 'pale_oak', 'oak', 'spruce', 'birch', 'jungle', 'acacia', 'mangrove', 'cherry', 'bamboo',
               'plains', 'desert', 'savanna', 'snowy', 'taiga', 'swamp', 'badlands', 'mountain', 'ocean', 'beach',
-              'forest', 'grassy', 'nether', 'surface', 'underground')
+              'forest', 'grassy', 'nether', 'surface', 'underground', 'cold', 'warm', 'beached')
+PROPER = {'minecraft:monument': 'Ocean Monument', 'minecraft:mineshaft_mesa': 'Badlands Mineshaft'}
 SMALL = {'of', 'the', 'and', 'in', 'on', 'a'}
 
 
@@ -32,6 +33,8 @@ def title(words):
 
 
 def structure_name(sid):
+    if sid in PROPER:
+        return PROPER[sid]
     words = [re.sub(r'(?<=[a-z])\d+$', '', w) for w in sid.split(':', 1)[-1].split('/')[-1].split('_') if w]
     for q in sorted(QUALIFIERS, key=len, reverse=True):
         qs = q.split('_')

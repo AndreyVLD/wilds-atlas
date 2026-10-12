@@ -118,10 +118,9 @@ def pick(secs, ys, key, pal):
     return out
 
 
-def scan_region(path, min_y=-64, height=384):
+def scan_region(path, min_y=-64):
     """-> (arrays with region-local palette indices, block names, biome names, structures [id, x0, y0, z0, x1, y1, z1, pieces], chunks)"""
     path = Path(path)
-    bits = max(1, height.bit_length())
     a = {'surf': np.full((512, 512), MISSING, np.int16), 'floor': np.full((512, 512), MISSING, np.int16),
          **{k: np.zeros((512, 512), np.uint16) for k in ('top', 'flo', 'bio')}}
     blocks, biomes, starts, n = {'minecraft:air': 0}, {'minecraft:void': 0}, [], 0
@@ -134,6 +133,7 @@ def scan_region(path, min_y=-64, height=384):
         hm = c.get('Heightmaps', {})
         if c.get('Status') != 'minecraft:full' or 'WORLD_SURFACE' not in hm or 'OCEAN_FLOOR' not in hm:
             continue
+        bits = 64 // -(-256 // len(hm['WORLD_SURFACE']))  # entry width follows the world height
         ws = packed(hm['WORLD_SURFACE'], bits, idx) + min_y - 1
         of = packed(hm['OCEAN_FLOOR'], bits, idx) + min_y - 1
         secs = {int(s['Y']): s for s in c.get('sections', [])}

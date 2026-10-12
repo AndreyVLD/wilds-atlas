@@ -65,5 +65,5 @@ export const ICON = {
   measure: icon('<path d="M12 2.5v2"/><circle cx="12" cy="6.3" r="1.8"/><path d="M11 7.9 6.5 20.5M13 7.9l4.5 12.6M6.5 20.5l-.4 1M17.5 20.5l.4 1"/>'),
   key: icon('<path d="M12 6.6C10 5.3 7.4 4.8 4 5.1v13c3.4-.3 6 .2 8 1.5 2-1.3 4.6-1.8 8-1.5v-13c-3.4-.3-6 .2-8 1.5zM12 6.6v13"/>'),
   candle: icon('<path d="M9 11h6v8.5H9zM6 20h12M12 11V9.4"/><path d="M12 2.8c1.8 2 2.4 3.3 1.9 4.6-.3.9-1 1.5-1.9 1.5s-1.6-.6-1.9-1.5c-.5-1.3.1-2.6 1.9-4.6z" fill="currentColor"/>'),
-  close: icon('<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>'),
+  chevron: icon('<path d="M6.5 9.5 12 15l5.5-5.5"/>'),
 }

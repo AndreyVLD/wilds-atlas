@@ -1,10 +1,10 @@
 # Wilds Atlas settings. Paths are relative to this file.
 
 title = "Wilds Atlas"
-subtitle = "A survey of the Wilds"
+subtitle = "A survey of {world}"            # {world} is the name of the map on show
 server = "../OG Server/minecraft-server"   # the Paper server folder (has world/, plugins/ and cache/)
 
-# Each [[worlds]] entry becomes one map.
+# Each [[worlds]] entry becomes one map in the world menu, in this order.
 #   id         used in links and folder names
 #   dimension  folder under world/dimensions (default "minecraft:<id>")
 #   bukkit     world name the plugins use for warps, WorldGuard and waystones (default <id>)
@@ -14,14 +14,16 @@ id = "wilds"
 name = "The Wilds"
 height = 704
 
-# [[worlds]]
-# id = "overworld"
-# name = "Main World"
-# bukkit = "world"
+[[worlds]]
+id = "main"
+name = "The Main World"
+dimension = "minecraft:overworld"
+bukkit = "world"
+sea = 62   # TerraformGenerator's sea level
 
-# [[worlds]]
-# id = "vanilla"
-# name = "Vanilla"
+[[worlds]]
+id = "vanilla"
+name = "The Vanilla World"
 
 [names]   # display names for WorldGuard regions and warps, by id
 spawn_core = "Spawn Square"

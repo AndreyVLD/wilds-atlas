@@ -38,6 +38,7 @@ export class Atlas extends EventTarget {
   style = store.get('style', 'parchment')
   private tiles?: Tiles
   private have: Set<string>[] = []
+  private want?: string
 
   constructor(el: HTMLElement, readonly index: Index, readout: HTMLElement) {
     super()
@@ -92,8 +93,11 @@ export class Atlas extends EventTarget {
 
   /** Swap in another world; `place` sets the view before anything that needs a map position is drawn. */
   private async load(id: string, place: (w: World) => void) {
+    this.want = id
     const w = await getJSON<World>(`maps/${id}/world.json`)
+    if (this.want !== id) return  // another world was picked meanwhile
     const z0 = w.tiles.map((t) => t.split('_').map(Number))
+    this.map.closePopup()
     this.world = w
     this.have = Array.from({ length: 1 - w.minZoom }, (_, k) => new Set(z0.map(([x, y]) => `${x >> k}_${y >> k}`)))
     this.map.setMinZoom(w.minZoom - 1)

@@ -60,13 +60,33 @@ export function ui(atlas: Atlas) {
   $('t-measure').onclick = () => ruler.toggle()
   search(atlas, $<HTMLInputElement>('q'), $('results'), () => openFind(false))
 
-  const nav = $('worlds')
-  nav.hidden = index.worlds.length < 2
-  nav.innerHTML = index.worlds.map((w) => `<button type="button" data-id="${esc(w.id)}">${esc(w.name)}</button>`).join('')
-  nav.onclick = (e) => {
-    const id = (e.target as HTMLElement).closest('button')?.dataset.id
-    if (id) atlas.open(id)
+  // the subtitle names the world on show and opens the list of worlds; the names share a grid cell so the width holds
+  const realm = $('realm'), menu = $('worlds'), many = index.worlds.length > 1
+  const survey = (name: string) => index.subtitle.replace('{world}', name.replace(/^The /, 'the '))
+  const stack = `<span class="stack"><span class="on">${realm.innerHTML}</span>` +
+    index.worlds.map((w) => `<span data-id="${esc(w.id)}">${esc(survey(w.name))}${many ? ICON.chevron : ''}</span>`).join('') + '</span>'
+  realm.innerHTML = many ? `<button type="button" aria-expanded="false" aria-controls="worlds" title="Choose a world">${stack}</button>` : stack
+  menu.innerHTML = index.worlds.map((w) =>
+    `<li><button type="button" data-id="${esc(w.id)}">${esc(w.name)}<small>${num(w.chunks)} chunks charted</small></button></li>`).join('')
+  const pick = realm.querySelector('button')
+  const list = (open: boolean) => {
+    menu.hidden = !open
+    pick?.setAttribute('aria-expanded', String(open))
   }
+  if (pick) pick.onclick = () => list(menu.hidden !== false)
+  menu.onclick = (e) => {
+    const id = (e.target as HTMLElement).closest('button')?.dataset.id
+    if (!id) return
+    list(false)
+    pick?.focus()
+    atlas.open(id)
+  }
+  addEventListener('pointerdown', (e) => !menu.hidden && !realm.parentElement!.contains(e.target as Node) && list(false))
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || menu.hidden) return
+    list(false)
+    pick?.focus()
+  })
 
   const styles = $('styles')
   styles.onclick = (e) => {
@@ -89,9 +109,17 @@ export function ui(atlas: Atlas) {
 
   atlas.addEventListener('world', () => {
     const w = atlas.world!
-    nav.querySelectorAll('button').forEach((b) => b.setAttribute('aria-current', String(b.dataset.id === w.id)))
-    const k = Math.min(2, -w.minZoom), s = w.spawn ?? [0, 0, 0]
-    const tile = `${Math.floor(s[0] / 256) >> k}_${Math.floor(s[2] / 256) >> k}`
+    realm.querySelectorAll<HTMLElement>('.stack > span').forEach((s) => s.classList.toggle('on', s.dataset.id === w.id))
+    menu.querySelectorAll('button').forEach((b) => b.setAttribute('aria-current', String(b.dataset.id === w.id)))
+    if (ruler.active) ruler.toggle(false)
+    // style previews show the land around spawn, or the fullest stretch of land when spawn is near the edge
+    const k = Math.min(2, -w.minZoom), s = w.spawn ?? [0, 0, 0], land = new Map<string, number>()
+    for (const t of w.tiles) {
+      const [x, y] = t.split('_').map(Number), key = `${x >> k}_${y >> k}`
+      land.set(key, (land.get(key) ?? 0) + 1)
+    }
+    const home = `${Math.floor(s[0] / 256) >> k}_${Math.floor(s[2] / 256) >> k}`
+    const tile = land.get(home) === 4 ** k ? home : [...land].reduce((a, b) => (b[1] > a[1] ? b : a), [home, 0])[0]
     styles.innerHTML = w.styles.map((st) =>
       `<button type="button" role="radio" data-style="${st}" aria-checked="${st === atlas.style}">` +
       `<i style="background-image:url('maps/${w.id}/tiles/${st}/${-k}/${tile}.webp?v=${w.v}')"></i>${STYLES[st] ?? st}</button>`).join('')
@@ -103,7 +131,7 @@ export function ui(atlas: Atlas) {
       (w.zones.length ? row('zones', '<i class="glyph ward"></i>', 'Safe zones', w.zones.length) : '') +
       (w.labels.length ? row('labels', '<i class="glyph name">Aa</i>', 'Biome names') : '')
     sync()
-    const when = new Date(index.updated)
+    const when = new Date(w.v * 1000)
     $('survey').textContent = `Charted ${when.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} from ${num(w.chunks)} chunks.`
   })
 }

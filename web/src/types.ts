@@ -39,4 +39,4 @@ export interface World {
   chunks: number
 }
 
-export interface Index { title: string; subtitle: string; updated: string; worlds: { id: string; name: string }[] }
+export interface Index { title: string; subtitle: string; updated: string; worlds: { id: string; name: string; v: number; chunks: number }[] }

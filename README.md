@@ -1,15 +1,16 @@
 # Wilds Atlas
 
-A map of the Wilds, our medieval RPG Minecraft world, styled like an old chart. It is rendered from the server's region files and hosted on GitHub Pages, so friends only need a link.
+Maps of our medieval RPG Minecraft server, styled like an old chart: the Wilds, the Main World and the Vanilla World. They are rendered from the server's region files and hosted on GitHub Pages, so friends only need a link.
 
 **https://andreyvld.github.io/wilds-atlas/**
 
-![The Wilds Atlas in the parchment style](docs/preview.webp)
+![The Wilds in the parchment style, with the world menu open](docs/preview.webp)
 
+- A map for each world, picked from the menu under the title
 - Four map styles: parchment, terrain, biomes and elevation, from a whole-world view down to single blocks
 - Heraldic markers for villages, taverns, keeps, temples, towers, illager camps, dungeons and ruins, read from the chunks themselves (vanilla, Terralith, Dungeons and Taverns, Structory, ATi, Grim Kingdoms and more), plus spawn, warps, waystones and WorldGuard safe zones
 - Biome names, search, a distance ruler with travel times, and a readout of x, y, z, biome and block under the cursor
-- Shareable links (`#wilds/x/z/zoom/style`), a candlelight dark mode, and phone support
+- Shareable links (`#main/x/z/zoom/style`), a candlelight dark mode, and phone support
 
 The renderer reads only region files and plugin configs. Player positions, inventories, homes and the seed never leave the server.
 
@@ -30,26 +31,24 @@ The renderer reads only region files and plugin configs. Player positions, inven
    pip install -r tools/requirements.txt
    ```
 3. On GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**.
+4. Double-click `atlas.bat`. The first run draws every world from scratch, which takes a while, and asks you to sign in to GitHub once.
+5. Double-click `schedule.bat`. It adds a Windows scheduled task, "Wilds Atlas", that publishes all the worlds every night at 04:30.
 
 ## Updating the map
 
-Double-click `atlas.bat`, or run:
+The nightly task runs in the background without a window and logs its last run to `cache/nightly.log`. It runs while you are signed in to Windows; if the PC was asleep or off at 04:30, it runs as soon as it can. To update right away, double-click `atlas.bat`, or run:
 
 ```
 python tools/atlas.py publish
 ```
 
-Only regions whose files changed since the last run are read and redrawn: new chunks from Chunky or from exploring, and builds. The site updates a minute or two after the push. Running it while the server is up is fine. Paper writes chunks to disk every few minutes, and `save-all` first catches the rest. Add `--full` to redraw everything.
+Only regions whose files changed since the last run are read and redrawn: new chunks from Chunky or from exploring, and builds. When nothing changed, nothing is pushed. The site updates a minute or two after a push. Running it while the server is up is fine. Paper writes chunks to disk every few minutes, and `save-all` first catches the rest. Add `--full` to redraw everything.
 
-To update every night at 05:00, run this once in a terminal:
-
-```
-schtasks /Create /TN "Wilds Atlas" /SC DAILY /ST 05:00 /TR "cmd /c cd /d D:\minecraft-servers\wilds-atlas && python tools\atlas.py publish > cache\last-publish.log 2>&1"
-```
+`schedule.bat 03:00` moves the nightly run to another time. To remove the task, run `schtasks /Delete /TN "Wilds Atlas" /F`.
 
 ## Settings
 
-`config.toml` holds the title, the server path, the worlds to map and display names for safe zones and warps. The main world and Vanilla are already listed but commented out; uncomment them to give the atlas a world switcher.
+`config.toml` holds the title, the server path, the worlds to map and display names for safe zones and warps. Each `[[worlds]]` entry is one map in the world menu, in the same order; the first is the one the site opens on.
 
 ## Working on the site
 
@@ -66,4 +65,5 @@ npm run dev                        # http://localhost:5173
 | `tools/scan.py` | Region and NBT reader, about 2 ms per chunk |
 | `tools/render.py` | Block and biome colours, the four styles, tile output |
 | `tools/world.py` | Structures, spawn, warps, zones, waystones, biome labels |
-| `web/src/` | The site: map, markers, readout, search and ruler |
+| `tools/schedule.ps1` | The nightly task, set up by `schedule.bat` |
+| `web/src/` | The site: map, world menu, markers, readout, search and ruler |
