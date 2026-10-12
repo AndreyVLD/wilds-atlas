@@ -32,11 +32,11 @@ The renderer reads only region files and plugin configs. Player positions, inven
    ```
 3. On GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**.
 4. Double-click `atlas.bat`. The first run draws every world from scratch, which takes a while, and asks you to sign in to GitHub once.
-5. Double-click `schedule.bat`. It adds a Windows scheduled task, "Wilds Atlas", that publishes all the worlds every night at 04:30.
+5. Double-click `schedule.bat`. It adds a Windows scheduled task, "Wilds Atlas", that publishes all the worlds every night at 23:00.
 
 ## Updating the map
 
-The nightly task runs in the background without a window and logs its last run to `cache/nightly.log`. It runs while you are signed in to Windows; if the PC was asleep or off at 04:30, it runs as soon as it can. To update right away, double-click `atlas.bat`, or run:
+The nightly task runs in the background without a window and logs its last run to `cache/nightly.log`. It runs while you are signed in to Windows; if the PC was asleep or off at 23:00, it runs as soon as it can. To update right away, double-click `atlas.bat`, or run:
 
 ```
 python tools/atlas.py publish

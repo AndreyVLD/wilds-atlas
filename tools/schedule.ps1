@@ -1,6 +1,6 @@
 # Sets up the nightly "Wilds Atlas" task: it renders every world in config.toml and publishes the atlas, without a window.
 # Run schedule.bat again to change the time, e.g. schedule.bat 03:00
-param([string]$At = '04:30')
+param([string]$At = '23:00')
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path $PSScriptRoot -Parent

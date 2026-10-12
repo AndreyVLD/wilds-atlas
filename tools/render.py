@@ -6,7 +6,7 @@ from PIL import Image
 
 from scan import MISSING
 
-VERSION = 1   # bump to force a full re-render
+VERSION = 2   # bump to force a full re-render
 B = 8         # border borrowed from neighbouring regions (shading, coasts, contours, stamps)
 STYLES = ('terrain', 'parchment', 'biomes', 'height')
 
@@ -213,6 +213,7 @@ def palette(blocks, biomes, biome_json, sea, min_y, height):
     brgb = np.array([biome_color(b) for b in biomes], np.float32)
     bwater = np.array([any(k in b for k in ('ocean', 'river')) for b in biomes])
     return {'lut': lut, 'kind': np.array([kind(b.split(':', 1)[-1]) for b in blocks], np.uint8),
+            'bloom': np.array([b.split(':', 1)[-1] in ('cherry_leaves', 'pink_petals') for b in blocks]),
             'water': np.array([r[0] == 'water' for r in rules]), 'brgb': brgb, 'bwater': bwater,
             'sea': sea, 'min_y': min_y, 'top_y': min_y + height}
 
@@ -278,6 +279,8 @@ def _glyph(rows, colors):
 
 TREE = _glyph((' ooo ', 'oOOOo', 'oOOOo', ' ooo ', '  t  '),
               {'o': ((58, 74, 42), 0.85), 'O': ((132, 146, 92), 0.75), 't': ((92, 66, 42), 0.9)})
+BLOSSOM = _glyph((' ooo ', 'oOOOo', 'oOOOo', ' ooo ', '  t  '),
+                 {'o': ((150, 72, 98), 0.8), 'O': ((236, 166, 190), 0.85), 't': ((92, 66, 42), 0.9)})
 DOT = [(0, 0, (150, 120, 70), 0.6)]
 
 
@@ -320,6 +323,8 @@ def parchment(c, P, X, Z):
     col = mix(col, UMBER, hn * 0.45)
     for kk, (rgb, a) in TINT.items():
         col = np.where((k == kk)[..., None], mix(col, rgb, a), col)
+    bloom = P['bloom'][c['top']] & land  # cherry blossom and fallen petals, in rose
+    col = np.where(bloom[..., None], mix(col, (236, 182, 198), 0.45), col)
     farm = (k == K['farm']) & (Z[:, None] % 3 == 0)
     col = np.where(farm[..., None], mix(col, (176, 150, 90), 0.5), col)
     # sea: wash by depth, coastline in ink, "water lining" parallel to the shore
@@ -341,7 +346,8 @@ def parchment(c, P, X, Z):
     edge = land & ((lv != n[1]) | (lv != n[3])) & c['valid']
     major = edge & ((np.maximum(lv, np.maximum(n[1], n[3])) % 4) == 0)
     col = np.where(edge[..., None], mix(col, (112, 80, 52), np.where(major, 0.55, 0.25)), col)
-    stamp(col, (k == K['tree']) & land, X, Z, 6, TREE, 11)
+    stamp(col, (k == K['tree']) & land & ~bloom, X, Z, 6, TREE, 11)
+    stamp(col, (k == K['tree']) & bloom, X, Z, 6, BLOSSOM, 11)
     stamp(col, (k == K['sand']) & land, X, Z, 4, DOT, 23)
     grain = (hsh(X[None, :], Z[:, None], 5) & 255) / 255.0 - 0.5
     return col * (1 + 0.05 * grain + 0.06 * vnoise(X, Z, 96, 7) + 0.03 * vnoise(X, Z, 24, 9))[..., None]

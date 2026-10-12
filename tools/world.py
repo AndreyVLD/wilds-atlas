@@ -144,8 +144,22 @@ def server_markers(server: Path, w, names):
     return markers, zones
 
 
+def patches(grid):
+    """Id of the 4-connected patch of equal cells each cell belongs to (union-find by hooking and pointer jumping)."""
+    i = np.arange(grid.size).reshape(grid.shape)
+    h, v = grid[:, :-1] == grid[:, 1:], grid[:-1] == grid[1:]
+    a, b = np.concatenate((i[:, :-1][h], i[:-1][v])), np.concatenate((i[:, 1:][h], i[1:][v]))
+    p = np.arange(grid.size)
+    while (p[a] != p[b]).any():
+        np.minimum.at(p, np.maximum(p[a], p[b]), np.minimum(p[a], p[b]))
+        while (p[p] != p).any():
+            p = p[p]
+    return p.reshape(grid.shape)
+
+
 def labels(grid, x0, z0, cell, biome_ids):
-    """Biome names placed at the most interior point of each sizeable area (grid: biome index per cell, -1 = none)."""
+    """Biome names at the most interior point of each sizeable patch (grid: biome index per cell, -1 = none).
+    A big patch gets further names only far apart; separate patches of a biome, like cherry groves, are named apart."""
     same = np.ones(grid.shape, bool)
     p = np.pad(grid, 1, constant_values=-1)
     for n in (p[:-2, 1:-1], p[2:, 1:-1], p[1:-1, :-2], p[1:-1, 2:]):
@@ -159,13 +173,14 @@ def labels(grid, x0, z0, cell, biome_ids):
     q = np.pad(dist, 1)
     peak = (dist >= 2) & np.all([dist >= q[1 + dy:q.shape[0] - 1 + dy, 1 + dx:q.shape[1] - 1 + dx]
                                  for dy in (-1, 0, 1) for dx in (-1, 0, 1)], 0)
-    out = []
+    patch, out, taken, named = patches(grid), [], np.zeros(grid.shape, bool), {}
     for r, c in sorted(np.argwhere(peak).tolist(), key=lambda rc: -dist[rc[0], rc[1]]):
-        b, rad = int(grid[r, c]), int(dist[r, c])
-        bid = biome_ids[b]
-        if 'cave' in bid or b == 0 or any((r - o[0]) ** 2 + (c - o[1]) ** 2 < (6 * o[3] if o[2] == b else 2.5) ** 2
-                                          for o in out):
+        b, rad, k = int(grid[r, c]), int(dist[r, c]), int(patch[r, c])
+        if b == 0 or taken[r, c] or 'cave' in biome_ids[b] or any(
+                (r - y) ** 2 + (c - x) ** 2 < ((6 if kk == k else 3) * d) ** 2 for y, x, d, kk in named.get(b, ())):
             continue
+        taken[max(r - 2, 0):r + 3, max(c - 2, 0):c + 3] = True  # names of other biomes keep a few cells away
+        named.setdefault(b, []).append((r, c, rad, k))
         out.append((r, c, b, rad))
     return [{'t': biome_name(biome_ids[b]), 'x': x0 + c * cell + cell // 2, 'z': z0 + r * cell + cell // 2,
              'r': rad * cell, **({'w': 1} if any(k in biome_ids[b] for k in ('ocean', 'river')) else {})}

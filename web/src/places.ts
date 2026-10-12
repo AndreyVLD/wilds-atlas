@@ -25,8 +25,10 @@ export class Places extends EventTarget {
     super()
     for (const [pane, z] of [['chart', 150], ['wards', 350], ['names', 450]] as const) map.createPane(pane).style.zIndex = String(z)
     for (const g of [this.chart, this.wards, this.names, this.marks, this.foot]) g.addTo(map)
-    map.on('moveend', () => this.draw())
-    map.on('zoomend', () => this.letter())
+    map.on('moveend', () => {
+      this.draw()
+      this.letter()
+    })
     map.on('popupclose', () => this.foot.clearLayers())
   }
 
@@ -119,14 +121,14 @@ export class Places extends EventTarget {
     return c
   }
 
-  /** Biome names, largest first, skipping any that would collide at this zoom. */
+  /** Biome names in view, largest first, skipping any that would collide at this zoom. */
   private letter() {
     this.names.clearLayers()
     if (!this.w || !this.show.labels) return
-    const z = this.map.getZoom(), placed: L.Bounds[] = []
+    const z = this.map.getZoom(), view = this.map.getBounds().pad(0.5), placed: L.Bounds[] = []
     for (const l of this.w.labels) {
       const r = l.r * 2 ** z
-      if (r < 56) continue
+      if (r < 56 || !view.contains(ll(l.x, l.z))) continue
       const size = Math.round(Math.min(22, 13 + r / 40)), w = l.t.length * size * 0.72 + 12, h = size * 1.4
       const p = this.map.project(ll(l.x, l.z), z), box = L.bounds([p.x - w / 2, p.y - h / 2], [p.x + w / 2, p.y + h / 2])
       if (placed.some((b) => b.intersects(box))) continue
