@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="A living map of the Wilds: its villages, taverns, keeps and dungeons.">
+  <meta name="theme-color" content="#e9dab2">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <title>Wilds Atlas</title>
+  <script>
+    try { var t = JSON.parse(localStorage.getItem('atlas:theme')) } catch (e) {}
+    document.documentElement.dataset.theme = t || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+  </script>
+</head>
+<body>
+  <div id="map" role="application" aria-label="World map"></div>
+
+  <header class="cartouche sheet">
+    <h1 id="title">Wilds Atlas</h1>
+    <p id="realm">Unrolling the chart…</p>
+    <nav id="worlds" aria-label="Worlds" hidden></nav>
+  </header>
+
+  <div class="dock">
+    <div class="tools" role="toolbar" aria-label="Map tools">
+      <button id="t-search" type="button" aria-controls="search" aria-expanded="false" title="Find a place" aria-label="Find a place"></button>
+      <button id="t-measure" type="button" aria-pressed="false" title="Measure a distance" aria-label="Measure a distance"></button>
+      <button id="t-key" type="button" aria-controls="key" aria-expanded="false" title="Map key" aria-label="Map key"></button>
+      <button id="t-theme" type="button" aria-pressed="false" title="Candlelight" aria-label="Candlelight"></button>
+    </div>
+    <section id="search" class="sheet panel" aria-label="Find a place" hidden>
+      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="A place, a biome, or x z" aria-label="Search the map">
+      <ul id="results"></ul>
+    </section>
+    <section id="measure" class="sheet panel" aria-live="polite" hidden></section>
+    <aside id="key" class="sheet panel" aria-label="Map key" hidden>
+      <h2>Map style</h2>
+      <div id="styles" class="styles" role="radiogroup" aria-label="Map style"></div>
+      <h2>On the map</h2>
+      <ul id="layers" class="layers"></ul>
+      <p id="survey" class="survey"></p>
+    </aside>
+  </div>
+
+  <div class="foot">
+    <div id="scale" class="scale sheet" aria-hidden="true"></div>
+    <div id="readout" class="readout sheet" aria-live="off"></div>
+    <div class="nav">
+      <div class="zoom">
+        <button id="z-in" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+        <button id="z-out" type="button" title="Zoom out" aria-label="Zoom out">−</button>
+      </div>
+      <button id="rose" type="button" title="Return to spawn" aria-label="Return to spawn"></button>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

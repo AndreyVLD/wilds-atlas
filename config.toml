@@ -1,0 +1,29 @@
+# Wilds Atlas settings. Paths are relative to this file.
+
+title = "Wilds Atlas"
+subtitle = "A survey of the Wilds"
+server = "../OG Server/minecraft-server"   # the Paper server folder (has world/, plugins/ and cache/)
+
+# Each [[worlds]] entry becomes one map.
+#   id         used in links and folder names
+#   dimension  folder under world/dimensions (default "minecraft:<id>")
+#   bukkit     world name the plugins use for warps, WorldGuard and waystones (default <id>)
+#   height     world height from the dimension type (default 384); min_y and sea default to -64 and 63
+[[worlds]]
+id = "wilds"
+name = "The Wilds"
+height = 704
+
+# [[worlds]]
+# id = "overworld"
+# name = "Main World"
+# bukkit = "world"
+
+# [[worlds]]
+# id = "vanilla"
+# name = "Vanilla"
+
+[names]   # display names for WorldGuard regions and warps, by id
+spawn_core = "Spawn Square"
+spawn_safe = "Spawn Sanctuary"
+village_safe = "Village Sanctuary"
