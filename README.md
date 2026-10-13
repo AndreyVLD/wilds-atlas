@@ -32,6 +32,10 @@ The renderer reads only region files and plugin configs. Player positions, inven
    ```
 3. On GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**.
 4. Double-click `atlas.bat`. The first run draws every world from scratch, which takes a while, and asks you to sign in to GitHub once.
+   If Git then asks you to pick one of several saved GitHub accounts, pin the one you chose so the nightly run never waits on that question:
+   ```
+   git config credential.https://github.com.username "<account name as shown in the picker>"
+   ```
 5. Double-click `schedule.bat`. It adds a Windows scheduled task, "Wilds Atlas", that publishes all the worlds every night at 23:00.
 
 ## Updating the map
