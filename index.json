@@ -1,0 +1,25 @@
+{
+ "title": "Wilds Atlas",
+ "subtitle": "A survey of {world}",
+ "updated": "2026-10-29T21:00:33+00:00",
+ "worlds": [
+  {
+   "id": "wilds",
+   "name": "The Wilds",
+   "v": 1793307623,
+   "chunks": 30538
+  },
+  {
+   "id": "main",
+   "name": "The Main World",
+   "v": 1793307633,
+   "chunks": 421577
+  },
+  {
+   "id": "vanilla",
+   "name": "The Vanilla World",
+   "v": 1792875642,
+   "chunks": 99991
+  }
+ ]
+}
